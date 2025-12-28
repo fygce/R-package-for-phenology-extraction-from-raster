@@ -15,7 +15,7 @@
 ```r
 # Install the development version from GitHub
 # install.packages("remotes")
-remotes::install_github("yourusername/phenoraster")
+remotes::install_github("fygce/phenoraster")
 
 
 
@@ -57,4 +57,5 @@ test_years <- 2000:2001
 res <- global_pheno_extraction(r, doy, years, outdir, threshold = 0.5, years_sel = test_years)
 
 cat("Phenology extraction finished. Results saved to:", outdir, "\n")
+
 
