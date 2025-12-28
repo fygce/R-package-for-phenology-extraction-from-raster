@@ -10,6 +10,7 @@ This approach reflects the **climatological background** of each pixel, providin
 - The threshold is **robust to noise and inter-annual variability**, because it uses the full time series rather than a single year.  
 - Extreme values in individual years (e.g., an unusually high summer peak) **do not distort the threshold**, avoiding bias in SOS/EOS extraction.  
 - Each pixel has a **local threshold**, preserving spatial heterogeneity while maintaining consistent yearly comparisons.  
+- Because the threshold is based on the long-term climatology, **phenological metrics across different years are directly comparable**, enabling meaningful inter-annual analysis.  
 - The method is flexible and can be applied to any regularly sampled raster time series, not limited to CMIP6 GPP data.
 
 ### Development Status and Extensibility
