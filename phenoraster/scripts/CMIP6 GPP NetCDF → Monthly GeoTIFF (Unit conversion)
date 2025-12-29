@@ -1,0 +1,74 @@
+# ==========================================
+# CMIP6 GPP NetCDF → Monthly GeoTIFF
+# Unit conversion:
+#   kg C m-2 s-1 → g C m-2 month-1
+# ==========================================
+
+# 1. Load required package
+if (!require(terra)) {
+  install.packages("terra")
+  library(terra)
+}
+
+# 2. Input NetCDF file and output directory
+ncfile <- "H:/cmip6_gpp/ssp585/ACCESS-ESM1-5/gpp_Lmon_ACCESS-ESM1-5_ssp585_r1i1p1f1_gn_201501-210012.nc"
+outdir <- "H:/cmip6_gpp/ssp585/ACCESS-ESM1-5/"
+
+# 3. Create output directory if it does not exist
+if (!dir.exists(outdir)) {
+  dir.create(outdir, recursive = TRUE)
+}
+
+# 4. Read GPP variable from NetCDF
+gpp <- rast(ncfile, subds = "gpp")
+
+# 5. Set missing value flag
+NAflag(gpp) <- -9999
+
+# 6. Extract time information
+time_vec <- time(gpp)
+
+# If time information is missing, manually generate monthly dates
+if (is.null(time_vec)) {
+  time_vec <- seq(
+    as.Date("2015-01-01"),
+    as.Date("2100-12-01"),
+    by = "month"
+  )
+}
+
+# 7. Helper function: calculate number of seconds in a month
+seconds_in_month <- function(date) {
+  start <- as.Date(format(date, "%Y-%m-01"))
+  end   <- seq(start, by = "month", length.out = 2)[2]
+  as.numeric(difftime(end, start, units = "secs"))
+}
+
+# 8. Loop over all months and export GeoTIFFs
+for (i in 1:nlyr(gpp)) {
+  
+  date_i <- time_vec[i]
+  yyyy_mm <- format(date_i, "%Y%m")
+  
+  # Number of seconds in the current month
+  sec_month <- seconds_in_month(date_i)
+  
+  # Unit conversion:
+  # kg C m-2 s-1 → g C m-2 month-1
+  gpp_month <- gpp[[i]] * 1000 * sec_month
+  
+  # Output file name
+  outfile <- file.path(outdir, paste0("gpp_", yyyy_mm, "_gCm2_month.tif"))
+  
+  # Write GeoTIFF
+  writeRaster(
+    gpp_month,
+    filename = outfile,
+    overwrite = TRUE,
+    gdal = c("COMPRESS=LZW")
+  )
+  
+  cat("Written:", outfile, "\n")
+}
+
+cat("✅ Unit conversion completed. All monthly GPP GeoTIFFs have been exported.\n")
