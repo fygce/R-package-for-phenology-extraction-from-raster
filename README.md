@@ -10,7 +10,7 @@ install.packages("remotes")
 
 remotes::install_github("fygce/phenoraster")
 
-Supported Phenology Threshold Methods
+## Supported Phenology Threshold Methods
 1. Relative Threshold Method (Multi-year Climatological Threshold)
 
 The original implementation of phenoraster is inspired by the relative amplitude method
@@ -73,7 +73,7 @@ It allows segmented or year-by-year processing, making it more flexible for larg
 This method is particularly useful when the research focus is on annual phenological responses
 rather than long-term climatological comparisons.
 
-Scripts and Workflows
+## Scripts and Workflows
 
 The package provides both functions and executable scripts for phenology extraction.
 
@@ -81,7 +81,7 @@ Relative threshold workflows are implemented using functions operating on the fu
 
 Dynamic threshold workflows can be executed directly using the script: fit_DL_pipeline_seed_pixel_TS1_NH.R
 
-Development Status and Extensibility
+## Development Status and Extensibility
 
 phenoraster is primarily developed for extracting vegetation phenology metrics from
 raster time series.
