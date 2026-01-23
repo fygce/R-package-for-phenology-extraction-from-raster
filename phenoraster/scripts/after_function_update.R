@@ -14,18 +14,12 @@ cat("Working directory set to:\n", pkg_path, "\n")
 cat("Running devtools::document() ...\n")
 devtools::document()
 
-# --------- 3. Remove old installed version (if exists) -----
-if ("phenoRaster" %in% rownames(installed.packages())) {
-  cat("Removing existing phenoraster package ...\n")
-  remove.packages("phenoraster")
-}
-
-# --------- 4. Install updated package ----------------------
+# --------- 3. Install updated package ----------------------
 cat("Installing updated phenoraster ...\n")
-devtools::install(pkg_path, dependencies = TRUE, upgrade = "never")
+devtools::install(pkg_path, upgrade = "never")
 
-# --------- 5. Load and verify --------------------------------
-library(phenoRaster)
+# --------- 4. Load and verify -------------------------------
+library(phenoraster)
 
 cat("Installed phenoraster version:\n")
 print(packageVersion("phenoraster"))

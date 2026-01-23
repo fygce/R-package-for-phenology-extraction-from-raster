@@ -1,21 +1,22 @@
 # ==============================================================
-# phenoraster_example_TS1_NH.R
-# TIMESAT Method 1 (Dynamic threshold)
-# Northern Hemisphere only (lat >= 0)
+# phenoraster_example_TS1.R
+# Example workflow for extracting SOS / EOS / POS
+# using TIMESAT Method 1 (dynamic relative threshold)
 # ==============================================================
+
 
 # -------------------------------
 # Step 0: Load packages
 # -------------------------------
-library(phenoraster)
+library(phenoraster)   # your package
 library(terra)
 library(phenofit)
 
 # -------------------------------
 # Step 1: Define input/output paths
 # -------------------------------
-indir  <- "H:/cmip6_gpp/ssp126/MPI-ESM1-2-HR/tif_lon180"
-outdir <- "H:/cmip6_gpp/output_pheno_TS1/ssp126/MPI-ESM1-2-HR"
+indir  <- "H:/cmip6_gpp/historical/ACCESS-ESM1-5/tif_lon180"
+outdir <- "H:/cmip6_gpp/output_pheno_TS1/historical/ACCESS-ESM1-5"
 
 if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
 
@@ -23,44 +24,33 @@ if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
 # Step 2: Read raster time series
 # -------------------------------
 ts <- read_raster_ts(indir)
-r  <- ts$raster
+r <- ts$raster
 dates <- ts$dates
 
 years <- as.integer(format(dates, "%Y"))
 doy   <- as.numeric(format(dates, "%j"))
 
-cat("Original raster:",
+cat("Raster stack loaded:",
     ncell(r), "pixels,",
     length(dates), "layers\n")
 
 # -------------------------------
-# Step 2.5: Crop + mask to Northern Hemisphere (lat >= 0)
-# -------------------------------
-
-# 1) crop extent to lat >= 0
-e_nh <- ext(r)
-ymin(e_nh) <- 0
-r <- crop(r, e_nh)
-
-# 2) mask (safety)
-lat <- init(r, "y")
-r <- mask(r, lat >= 0)
-
-cat("Cropped & masked to NH:",
-    ncell(r), "pixels\n")
-cat("NH extent:", as.character(ext(r)), "\n")
-
-# -------------------------------
-# Step 3: Single pixel test (TS1, NH only)
+# Step 3: Single pixel test (TIMESAT method 1)
 # -------------------------------
 set.seed(123)
 
 vals <- values(r)
 
-# select pixels with valid data (NH only)
+# Select pixels with valid data
 good_pixels <- which(rowSums(!is.na(vals) & vals != 0) > 0)
 
-pixel_index <- sample(good_pixels, 1)
+manual_pixel_index <- NULL   # e.g. 1222, or NULL for random
+pixel_index <- if (!is.null(manual_pixel_index)) {
+  manual_pixel_index
+} else {
+  sample(good_pixels, 1)
+}
+
 cat("Selected test pixel index:", pixel_index, "\n")
 
 v_all <- vals[pixel_index, ]
@@ -70,10 +60,10 @@ fits <- fit_pixel_DL_yearly(
   y_all = v_all,
   doy_all = doy,
   year_vec = years,
-  pixel_index = pixel_index
+  pixel_index = pixel_index   # enables per-year plots
 )
 
-# ---- Extract phenology (TS1) ----
+# ---- Extract phenology using TS1 ----
 pheno_pixel_TS1 <- extract_pheno_pixel_TS1(
   fits,
   threshold = 0.5
@@ -92,7 +82,7 @@ thr_year <- calc_dynamic_threshold_year(
 
 plot(fit_year$t_dense, fit_year$fhat,
      type = "l", lwd = 2, col = "red",
-     main = paste("Pixel", pixel_index, "Year", yr, "(TS1, NH)"),
+     main = paste("Pixel", pixel_index, "Year", yr, "(TS1)"),
      xlab = "DOY", ylab = "GPP")
 
 points(fit_year$t_obs, fit_year$y_obs,
@@ -113,14 +103,15 @@ legend("topleft",
        bty = "n")
 
 # -------------------------------
-# Step 4: Global phenology extraction (TS1, NH only)
+# Step 4: Global phenology extraction (TIMESAT method 1)
 # -------------------------------
-test_years <- 2015:2100
 
-cat("Running global TS1 extraction (NH only)...\n")
+test_years <- 1950:1951   # subset for testing
+
+cat("Running global TS1 extraction...\n")
 
 res_TS1 <- global_pheno_extraction_TS1(
-  r = r,          # already cropped + masked
+  r = r,
   doy = doy,
   years = years,
   outdir = outdir,
