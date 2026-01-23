@@ -1,14 +1,69 @@
 # phenoraster
 
-`phenoraster` is an R package for extracting vegetation phenology metrics (Start of Season, SOS; End of Season, EOS; Peak of Season, POS) from raster time series, either globally or regionally.
+`phenoraster` is an R package for extracting vegetation phenology metrics  
+(Start of Season, SOS; End of Season, EOS; Peak of Season, POS)  
+from raster time series, either globally or regionally.
+
+The package is designed for large-scale datasets such as **CMIP6 GPP**,  
+but is flexible enough to handle any regularly sampled raster time series.
+
+---
 
 ## Features
 
-- Read monthly/temporal raster stacks as `SpatRaster` objects.
-- Fit double-logistic (DL) curves for each pixel.
-- Calculate a robust relative amplitude threshold for phenology extraction.
+- Read monthly or regular-temporal raster stacks as `SpatRaster` objects.
+- Fit **double-logistic (DL)** curves for each pixel.
+- Support **two phenology extraction strategies**:
+  - **Relative threshold method** (climatology-based)
+  - **Dynamic threshold method** (year-specific)
 - Extract SOS, POS, EOS for each pixel and each year.
-- Export results as single-band TIFF files per year.
+- Support global-scale processing with optional parallel computation.
+- Export results as single-band GeoTIFF files per year.
+
+---
+
+## Phenology Extraction Methods
+
+### 1. Relative Threshold Method (Climatological)
+
+In this method, the threshold is calculated from the **full multi-year time series**  
+of each pixel and represents its **long-term climatological growth pattern**.  
+SOS and EOS are identified when the fitted DL curve reaches a fixed fraction  
+of this climatological amplitude.
+
+**Key characteristics:**
+
+- Thresholds are **robust to noise and inter-annual variability**.
+- Extreme values in individual years do not distort phenology detection.
+- Phenological metrics are **directly comparable across years**.
+- Preserves spatial heterogeneity by using pixel-wise thresholds.
+
+**Important note**  
+Because the threshold is defined from the **entire time series**,  
+**all years must be provided at once** when using this method.  
+Extracting phenology in separate temporal subsets will lead to  
+different thresholds and may cause **temporal discontinuities**  
+in the resulting phenology series.
+
+---
+
+### 2. Dynamic Threshold Method (Year-specific)
+
+The dynamic threshold method calculates thresholds **independently for each year**,  
+based solely on the **annual growth curve of that pixel**.
+
+**Key characteristics:**
+
+- Thresholds adapt to **inter-annual variability**.
+- Suitable for applications focusing on **year-to-year phenological responses**.
+- Widely used in traditional TIMESAT-style analyses.
+- Avoids dependence on long-term climatology.
+
+This method is particularly useful when:
+- Long time series are not available, or
+- Strong inter-annual variability is of primary interest.
+
+---
 
 ## Installation
 
@@ -16,46 +71,3 @@
 # Install the development version from GitHub
 # install.packages("remotes")
 remotes::install_github("fygce/phenoraster")
-
-
-
-
-library(phenoraster)
-library(terra)
-library(raster)
-library(phenofit)
-
-# Load example raster data included in the package
-indir <- system.file("extdata/cmip6_gpp/historical/ACCESS-ESM1-5/tif_lon180",
-                     package = "phenoraster")
-
-# Define output folder in temporary directory
-outdir <- file.path(tempdir(), "pheno_output")
-if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
-
-# Read raster time series
-ts <- read_raster_ts(indir)
-r <- ts$raster
-dates <- ts$dates
-
-years <- as.integer(format(dates, "%Y"))
-doy   <- as.numeric(format(dates, "%j"))
-
-# Single-pixel DL fit test (randomly selected)
-set.seed(123)
-vals <- values(r)
-good_pixels <- which(rowSums(!is.na(vals) & vals != 0) > 0)
-pixel_index <- sample(good_pixels, 1)
-v_all <- vals[pixel_index, ]
-
-fits <- fit_pixel_DL_yearly(v_all, doy, years)
-thr <- calc_relative_threshold_pixel(fits, threshold = 0.5)
-pheno_pixel <- t(sapply(fits, extract_pheno_DL_year, thr = thr))
-
-# Global phenology extraction for a subset of years
-test_years <- 2000:2001
-res <- global_pheno_extraction(r, doy, years, outdir, threshold = 0.5, years_sel = test_years)
-
-cat("Phenology extraction finished. Results saved to:", outdir, "\n")
-
-
