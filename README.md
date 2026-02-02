@@ -1,4 +1,4 @@
-# phenoraster: R package for phenology extraction from raster time series
+## phenoraster: R package for phenology extraction from raster time series
 
 `phenoraster` is an R package for extracting vegetation phenology metrics
 (Start of Season, Peak of Season, End of Season) from raster time series.
@@ -7,15 +7,11 @@ The package is based on **Double-Logistic (DL) curve fitting** and currently
 supports **three phenology extraction strategies**, corresponding to widely
 used methods in the phenology literature and the TIMESAT framework.
 
----
-
 ## Installation
-
-```r
 install.packages("remotes")
 remotes::install_github("fygce/phenoraster")
 
-# Supported Phenology Extraction Methods
+## Supported Phenology Extraction Methods
 1. TS3 — Relative Threshold Method (Multi-year Climatological Threshold)
 Corresponds to TIMESAT Method 3 (Relative Amplitude Threshold)
 
@@ -126,7 +122,7 @@ MODIS NDVI / EVI
 
 Other biweekly or high-frequency vegetation indices
 
-# Scripts and Workflows
+## Scripts and Workflows
 The package provides both reusable functions and end-to-end workflow scripts.
 
 Method	Workflow script
@@ -144,7 +140,7 @@ Global raster-scale extraction
 
 Optional Northern Hemisphere masking
 
-# Development Status and Extensibility
+## Development Status and Extensibility
 phenoraster is actively developed for extracting vegetation phenology metrics
 from raster time series.
 
