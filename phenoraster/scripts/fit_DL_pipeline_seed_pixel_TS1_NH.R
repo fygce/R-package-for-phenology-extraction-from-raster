@@ -1,6 +1,6 @@
 # ==============================================================
 # phenoraster_example_TS1_NH.R
-# TIMESAT Method 1 (Dynamic threshold)
+# TIMESAT Method 1 (TS1): Dynamic threshold
 # Northern Hemisphere only (lat >= 0)
 # ==============================================================
 
@@ -14,17 +14,10 @@ library(phenofit)
 # -------------------------------
 # Step 1: Define input/output paths
 # -------------------------------
-# Input: example CMIP6 GPP data included in the package
-indir <- system.file(
-  "extdata/cmip6_gpp/historical/ACCESS-ESM1-5/tif_lon180",
-  package = "phenoraster"
-)
+indir  <- "H:/cmip6_gpp/ssp126/MPI-ESM1-2-HR/tif_lon180"
+outdir <- "H:/cmip6_gpp/output_pheno_TS1/ssp126/MPI-ESM1-2-HR"
 
-stopifnot(dir.exists(indir))
-
-# Output: temporary directory for demonstration
-outdir <- file.path(tempdir(), "phenoraster_output_TS1")
-dir.create(outdir, showWarnings = FALSE, recursive = TRUE)
+if (!dir.exists(outdir)) dir.create(outdir, recursive = TRUE)
 
 # -------------------------------
 # Step 2: Read raster time series
@@ -122,7 +115,7 @@ legend("topleft",
 # -------------------------------
 # Step 4: Global phenology extraction (TS1, NH only)
 # -------------------------------
-test_years <- 2000:2001
+test_years <- 2015:2100
 
 cat("Running global TS1 extraction (NH only)...\n")
 
@@ -137,4 +130,3 @@ res_TS1 <- global_pheno_extraction_TS1(
 
 cat("TS1 phenology extraction finished.\n")
 cat("Results saved to:", outdir, "\n")
-
