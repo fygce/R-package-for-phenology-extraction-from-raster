@@ -158,3 +158,5 @@ Support for additional vegetation indices
 Contributions are welcome via GitHub Pull Requests.
 For major methodological extensions, users are encouraged to contact the
 package author for discussion.
+
+This software is archived on Zenodo: https://doi.org/10.5281/zenodo.19099409
